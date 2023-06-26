@@ -1,0 +1,16 @@
+name: publish-image
+run-name: Publish ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+on:
+  release:
+    types: [ published ]
+  push:
+    branches: [ master ]
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: macbre/push-to-ghcr@v12
+        with:
+          image_name: ${{ github.repository }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
