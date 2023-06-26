@@ -11,32 +11,18 @@ if [[ $DRONE_COMMIT_MESSAGE == *"[NO CACHE]"* ]]; then
     exit 0
 fi
 
-CACHE_PATH="$DRONE_REPO_OWNER/$DRONE_REPO_NAME/$DRONE_JOB_NUMBER"
-if [[ -n "$PLUGIN_CACHE_KEY" ]]; then
-    function join_by { local IFS="$1"; shift; echo "$*"; }
-    IFS=','; read -ra CACHE_PATH_VARS <<< "$PLUGIN_CACHE_KEY"
-    CACHE_PATH_VALUES=()
-    for env_var in "${CACHE_PATH_VARS[@]}"; do
-        env_var_value="${!env_var}"
-
-        if [[ -z "$env_var_value" ]]; then
-            echo "Warning! Environment variable '${env_var}' does not contain a value, it will be ignored!"
-        else
-            CACHE_PATH_VALUES+=("${env_var_value}")
-        fi
-    done
-    CACHE_PATH=$(join_by / "${CACHE_PATH_VALUES[@]}")
+PACKAGE_FILE="package-lock.json"
+if [[ -n "$PLUGIN_PACKAGE_FILE" ]]; then
+    PACKAGE_FILE="${PLUGIN_PACKAGE_FILE}"
 fi
 
-if [[ -e ".cache_key" ]]; then
-    echo "Found a .cache_key file to be used as the cache path!"
-    CACHE_PATH=$(cut -c-$(getconf NAME_MAX /) .cache_key | head -n 1)
-
-    if [[ -n "$PLUGIN_CACHE_KEY_DISABLE_SANITIZE" && "$PLUGIN_CACHE_KEY_DISABLE_SANITIZE" == "true" ]]; then
-        echo "Warning! .cache_key will be used as-is. Sanitization is your responsibility to make it filename friendly!"
-    else
-        CACHE_PATH=$(echo "$CACHE_PATH" | md5sum | cut -d ' ' -f 1)
-    fi
+if [[ -e "${PACKAGE_FILE}" ]]; then
+    echo "Using ${PACKAGE_FILE} as cache key"
+    CACHE_PATH=$(md5sum "${PACKAGE_FILE}" | cut -d' ' -f1)
+    echo "Using ${CACHE_PATH} as cache path"
+else
+    echo "Cache key: ${PACKAGE_FILE} not found"
+    exit 0
 fi
 
 IFS=','; read -ra SOURCES <<< "$PLUGIN_MOUNT"
