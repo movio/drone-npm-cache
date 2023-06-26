@@ -1,11 +1,6 @@
 #!/bin/bash
 set -e
 
-if [ -z "$PLUGIN_MOUNT" ]; then
-    echo "Specify folders to cache in the mount property! Plugin won't do anything!"
-    exit 0
-fi
-
 PACKAGE_FILE="package-lock.json"
 if [[ -n "$PLUGIN_PACKAGE_FILE" ]]; then
     PACKAGE_FILE="${PLUGIN_PACKAGE_FILE}"
@@ -22,8 +17,10 @@ fi
 
 cd $(dirname ${PACKAGE_FILE})
 PACKAGE_FILE=$(basename ${PACKAGE_FILE})
+npm set cache .npm
 
-IFS=','; read -ra SOURCES <<< "$PLUGIN_MOUNT"
+SOURCES=(./node_modules ./.npm)
+
 if [[ -n "$PLUGIN_REBUILD" && "$PLUGIN_REBUILD" == "true" ]]; then
     # Create cache
     for source in "${SOURCES[@]}"; do
@@ -60,6 +57,14 @@ elif [[ -n "$PLUGIN_RESTORE" && "$PLUGIN_RESTORE" == "true" ]]; then
             echo "No cache for $source"
         fi
     done
+    if [ -d ./node_modules ]
+    then
+        echo "Running npm install..."
+        npm install --no-audit --no-progress --silent
+    else
+        echo "Running npm clean install..."
+        npm ci --no-audit --no-progress --silent
+    fi
 else
     echo "No restore or rebuild flag specified, plugin won't do anything!"
 fi
