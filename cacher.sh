@@ -21,7 +21,7 @@ if [[ -e "${PACKAGE_FILE}" ]]; then
     CACHE_PATH=$(md5sum "${PACKAGE_FILE}" | cut -d' ' -f1)
     echo "Using ${CACHE_PATH} as cache path"
 else
-    echo "Cache key: ${PACKAGE_FILE} not found"
+    echo "package file: ${PACKAGE_FILE} not found"
     exit 0
 fi
 
