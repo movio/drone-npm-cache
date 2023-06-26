@@ -27,11 +27,6 @@ if [[ -n "$PLUGIN_REBUILD" && "$PLUGIN_REBUILD" == "true" ]]; then
         if [ -d "$source" ]; then
             echo "Rebuilding tar archive for folder $source..."
             tar cf "/cache/${CACHE_PATH}/${source}.tar" "${source}/"
-        elif [ -f "$source" ]; then
-            echo "Rebuilding cache for file $source..."
-            source_dir=$(dirname $source)
-            mkdir -p "/cache/$CACHE_PATH/$source_dir" && \
-                rsync -aHA --delete "$source" "/cache/$CACHE_PATH/$source_dir/"
         else
             echo "$source does not exist, removing from cached folder..."
             rm -rf "/cache/$CACHE_PATH/$source"
@@ -44,15 +39,6 @@ elif [[ -n "$PLUGIN_RESTORE" && "$PLUGIN_RESTORE" == "true" ]]; then
             echo "Restoring tar archive for folder $source..."
             mkdir -p "$source" && \
                 tar xf "/cache/${CACHE_PATH}/${source}.tar"
-        elif [ -d "/cache/$CACHE_PATH/$source" ]; then
-            echo "Restoring cache for folder $source..."
-            mkdir -p "$source" && \
-                rsync -aHA --delete "/cache/$CACHE_PATH/$source/" "$source"
-        elif [ -f "/cache/$CACHE_PATH/$source" ]; then
-            echo "Restoring cache for file $source..."
-            source_dir=$(dirname $source)
-            mkdir -p "$source_dir" && \
-                rsync -aHA --delete "/cache/$CACHE_PATH/$source" "$source_dir/"
         else
             echo "No cache for $source"
         fi
