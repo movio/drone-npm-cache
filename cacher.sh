@@ -20,14 +20,16 @@ else
     exit 0
 fi
 
+cd $(dirname ${PACKAGE_FILE})
+PACKAGE_FILE=$(basename ${PACKAGE_FILE})
+
 IFS=','; read -ra SOURCES <<< "$PLUGIN_MOUNT"
 if [[ -n "$PLUGIN_REBUILD" && "$PLUGIN_REBUILD" == "true" ]]; then
     # Create cache
     for source in "${SOURCES[@]}"; do
         if [ -d "$source" ]; then
-            echo "Rebuilding cache for folder $source..."
-            mkdir -p "/cache/$CACHE_PATH/$source" && \
-                rsync -aHA --delete "$source/" "/cache/$CACHE_PATH/$source"
+            echo "Rebuilding tar archive for folder $source..."
+            tar cf "/cache/${CACHE_PATH}/${source}.tar" "${source}/"
         elif [ -f "$source" ]; then
             echo "Rebuilding cache for file $source..."
             source_dir=$(dirname $source)
@@ -41,7 +43,11 @@ if [[ -n "$PLUGIN_REBUILD" && "$PLUGIN_REBUILD" == "true" ]]; then
 elif [[ -n "$PLUGIN_RESTORE" && "$PLUGIN_RESTORE" == "true" ]]; then
     # Restore from cache
     for source in "${SOURCES[@]}"; do
-        if [ -d "/cache/$CACHE_PATH/$source" ]; then
+        if [ -d "/cache/${CACHE_PATH}/${source}.tar" ]; then
+            echo "Restoring tar archive for folder $source..."
+            mkdir -p "$source" && \
+                tar xf "/cache/${CACHE_PATH}/${source}.tar"
+        elif [ -d "/cache/$CACHE_PATH/$source" ]; then
             echo "Restoring cache for folder $source..."
             mkdir -p "$source" && \
                 rsync -aHA --delete "/cache/$CACHE_PATH/$source/" "$source"
