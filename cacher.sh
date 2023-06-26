@@ -6,11 +6,6 @@ if [ -z "$PLUGIN_MOUNT" ]; then
     exit 0
 fi
 
-if [[ $DRONE_COMMIT_MESSAGE == *"[NO CACHE]"* ]]; then
-    echo "Found [NO CACHE] in commit message, skipping cache restore and rebuild!"
-    exit 0
-fi
-
 PACKAGE_FILE="package-lock.json"
 if [[ -n "$PLUGIN_PACKAGE_FILE" ]]; then
     PACKAGE_FILE="${PLUGIN_PACKAGE_FILE}"
@@ -44,26 +39,6 @@ if [[ -n "$PLUGIN_REBUILD" && "$PLUGIN_REBUILD" == "true" ]]; then
         fi
     done
 elif [[ -n "$PLUGIN_RESTORE" && "$PLUGIN_RESTORE" == "true" ]]; then
-    # Clear existing cache if asked in commit message
-    if [[ $DRONE_COMMIT_MESSAGE == *"[CLEAR CACHE]"* ]]; then
-        if [ -d "/cache/$CACHE_PATH" ]; then
-            echo "Found [CLEAR CACHE] in commit message, clearing cache..."
-            rm -rf "/cache/$CACHE_PATH"
-            exit 0
-        fi
-    fi
-    # Remove files older than TTL
-    if [[ -n "$PLUGIN_TTL" && "$PLUGIN_TTL" > "0" ]]; then
-        if [[ $PLUGIN_TTL =~ ^[0-9]+$ ]]; then
-            if [ -d "/cache/$CACHE_PATH" ]; then
-              echo "Removing files and (empty) folders older than $PLUGIN_TTL days..."
-              find "/cache/$CACHE_PATH" -type f -ctime +$PLUGIN_TTL -delete
-              find "/cache/$CACHE_PATH" -type d -ctime +$PLUGIN_TTL -empty -delete
-            fi
-        else
-            echo "Invalid value for ttl, please enter a positive integer. Plugin will ignore ttl."
-        fi
-    fi
     # Restore from cache
     for source in "${SOURCES[@]}"; do
         if [ -d "/cache/$CACHE_PATH/$source" ]; then

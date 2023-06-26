@@ -37,21 +37,3 @@ pipeline:
 ```
 
 The example above illustrates a typical Node.js project Drone configuration. It caches the `./node_modules` directory to a mounted volume on the host system: `/tmp/cache`. This prevents `npm` from downloading and installing the dependencies for every build.
-
-## Using cache lifetime
-It is possible to limit the lifetime of cached files and folders.
-
-```yaml
-pipeline:
-  restore-cache:
-    image: movio/drone-npm-cache
-    restore: true
-    mount:
-      - ./node_modules
-    # Mount the cache volume, needs "Trusted"
-    volumes:
-      - /tmp/cache:/cache
-    ttl: 7
-```
-
-The example above shows a situation where cached items older than 7 days will not be restored (they will be removed instead). Only the restore step needs the `ttl` parameter.
