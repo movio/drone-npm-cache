@@ -1,3 +1,7 @@
+_Archived_
+
+This was a brief experiment
+
 # drone-npm-cache
 
 This is a pure Bash [Drone](https://github.com/drone/drone) plugin to cache npm downloads to a locally mounted volume
